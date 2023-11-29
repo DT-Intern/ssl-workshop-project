@@ -16,7 +16,7 @@ export class Game {
 	run() {
 		amun.log("Game Play loop");
 
-		const stringDisplay = new TacticPixelString(World.FriendlyRobots, "hello", 3);
+		const stringDisplay = new TacticPixelString(World.FriendlyRobots, "wfwolves", 5);
 		stringDisplay.run();
 
 		// const image = "00000\n00111\n01100\n01111\n00111\n00101";

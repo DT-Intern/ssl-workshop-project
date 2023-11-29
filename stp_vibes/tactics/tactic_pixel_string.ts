@@ -96,6 +96,10 @@ export class TacticPixelString {
                 skill.run(new Vector(x, y), 0);
             }
         });
+
+        for (let i = coordinates.length; i < this.robots.length; i++) {
+            new MoveTo(this.robots[i]).run(new Vector(-4 + i * 0.3, -6), 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+        }
     }
 
 }
