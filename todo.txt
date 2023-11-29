@@ -4,3 +4,5 @@
 - select closest (free) agent to move to pixel
 - streamline image importing process
 - use all 30 (+2) bots collaboratively
+- instead of single string as anim input use object like [{timing:..., content:string|emoji}]
+- wiggle animation for double letters
