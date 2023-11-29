@@ -2,18 +2,28 @@ import * as World from "base/world";
 import { FriendlyRobot, Robot } from "base/robot";
 import { MoveTo } from "stp_vibes/skills/moveto";
 import { Vector } from "base/vector";
+import { isConstructorDeclaration } from "typescript";
 
 
 export class TacticPixelString {
 
     private robots: FriendlyRobot[];
     private letters: string[];
+    private queue: string[];
     private source: string;
     private spacing: number = 1;
+    private delay: number = 1;
 
-    constructor(robots: FriendlyRobot[], source: string) {
+    // Custom timer
+    private timeDiff: number = 0;
+    private currentIndex: number = 0;
+
+    constructor(robots: FriendlyRobot[], source: string, delay: number) {
         this.robots = robots;
         this.source = source;
+        this.delay = delay;
+        this.currentIndex = 0;
+        this.timeDiff = 0;
         this.letters = [
             "01110\n10001\n10001\n11111\n10001",
             "11110\n10001\n11110\n10001\n11110",
@@ -42,15 +52,28 @@ export class TacticPixelString {
             "10001\n10001\n01010\n00100\n01000",
             "11111\n00010\n00100\n01000\n11111",
         ];
+
+        this.queue = this.source.toLowerCase().split("").map((letter: string) => this.letters[letter.charCodeAt(0) - 97]);
     }
 
     public run() {
-        this.source.split("").forEach((letter: string) => {
-            const letterString = this.letters[letter.charCodeAt(0) - 97]
-            const lines = letterString.split("\n");
+        if (this.queue) {
+            this.timeDiff = World.TimeDiff;
+
+            if (this.timeDiff > this.delay) {
+                this.timeDiff = 0;
+
+                if (this.currentIndex < this.queue.length - 1) {
+                    this.currentIndex += 1;
+                } else {
+                    this.currentIndex = 0;
+                }
+            }
+
+            const lines = this.queue[this.currentIndex].split("\n");
             const matrix = lines.map((line) => Array.from(line).map((c) => c === "0" ? false : true).reverse()).reverse();
             this.renderLetter(matrix);
-        });
+        }
     }
 
     renderLetter(pixels: boolean[][]) {
