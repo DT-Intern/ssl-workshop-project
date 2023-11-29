@@ -15,15 +15,13 @@ export class TacticPixelString {
     private delay: number = 1;
 
     // Custom timer
-    private timeDiff: number = 0;
-    private currentIndex: number = 0;
+    static timeDiff: number = 0;
+    static currentIndex: number = 0;
 
     constructor(robots: FriendlyRobot[], source: string, delay: number) {
         this.robots = robots;
         this.source = source;
         this.delay = delay;
-        this.currentIndex = 0;
-        this.timeDiff = 0;
         this.letters = [
             "01110\n10001\n10001\n11111\n10001",
             "11110\n10001\n11110\n10001\n11110",
@@ -58,19 +56,20 @@ export class TacticPixelString {
 
     public run() {
         if (this.queue) {
-            this.timeDiff = World.TimeDiff;
+            TacticPixelString.timeDiff += World.TimeDiff;
+            amun.log(TacticPixelString.timeDiff)
 
-            if (this.timeDiff > this.delay) {
-                this.timeDiff = 0;
+            if (TacticPixelString.timeDiff > this.delay) {
+                TacticPixelString.timeDiff = 0;
 
-                if (this.currentIndex < this.queue.length - 1) {
-                    this.currentIndex += 1;
+                if (TacticPixelString.currentIndex < this.queue.length - 1) {
+                    TacticPixelString.currentIndex += 1;
                 } else {
-                    this.currentIndex = 0;
+                    TacticPixelString.currentIndex = 0;
                 }
             }
 
-            const lines = this.queue[this.currentIndex].split("\n");
+            const lines = this.queue[TacticPixelString.currentIndex].split("\n");
             const matrix = lines.map((line) => Array.from(line).map((c) => c === "0" ? false : true).reverse()).reverse();
             this.renderLetter(matrix);
         }
