@@ -15,11 +15,14 @@ export class Game {
 	run() {
 		amun.log("Game Play loop");
 
-		const display = new TacticPixelDisplay(World.FriendlyRobots, [
-			[true, false, false],
-			[false, true, false],
-			[false, false, true],
-		]);
+		// const image = "00000\n00111\n01100\n01111\n00111\n00101";
+		const image = "11111\n10001\n10001\n10001\n10001\n11111";
+
+		const lines = image.split("\n");
+		const matrix = lines.map((line) => Array.from(line).map((c) => c === "0" ? false : true).reverse()).reverse();
+		// amun.log(matrix);
+
+		const display = new TacticPixelDisplay(World.FriendlyRobots, matrix, [4, 5]);
 		display.run();
 	}
 }

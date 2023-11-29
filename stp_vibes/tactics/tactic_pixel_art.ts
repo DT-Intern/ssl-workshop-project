@@ -8,12 +8,14 @@ export class TacticPixelDisplay {
 
     private robots: FriendlyRobot[];
     private pixels: boolean[][];
+    private dimensions: [number, number];
 
     private spacing: number = 1;
 
-    constructor(robots: FriendlyRobot[], pixels: boolean[][]) {
+    constructor(robots: FriendlyRobot[], pixels: boolean[][], dimensions: [number, number]) {
         this.robots = robots;
         this.pixels = pixels;
+        this.dimensions = dimensions;
     }
 
     public run() {
@@ -32,8 +34,8 @@ export class TacticPixelDisplay {
         coordinates.forEach((coordinate, index) => {
             if (index < this.robots.length) {
                 const skill = new MoveTo(this.robots[index]);
-                const x = (coordinate[0] * this.spacing - coordinates.length / 2 * this.spacing);
-                const y = (coordinate[1] * this.spacing - coordinates.length / 2 * this.spacing);
+                const x = (coordinate[0] * this.spacing - (this.pixels.length - 1) / 2 * this.spacing); // check if -1 is only for even numbers of pixels
+                const y = (coordinate[1] * this.spacing - (this.pixels[0].length - 1) / 2 * this.spacing);
                 skill.run(new Vector(x, y), 0);
             }
         });
