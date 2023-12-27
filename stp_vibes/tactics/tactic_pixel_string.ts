@@ -11,7 +11,7 @@ export class TacticPixelString {
     private letters: string[];
     private queue: string[];
     private source: string;
-    private spacing: number = 1;
+    private spacing: number = 0.5;
     private delay: number = 1;
 
     // Custom timer
@@ -97,8 +97,16 @@ export class TacticPixelString {
             }
         });
 
+        const positions: Vector[] = [];
         for (let i = coordinates.length; i < this.robots.length; i++) {
-            new MoveTo(this.robots[i]).run(new Vector(-4 + i * 0.3, -6), 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+            const rad = (i - coordinates.length) / (this.robots.length - coordinates.length) * 2 * Math.PI;
+            const [x, y] = [Math.cos(rad) * 3, Math.sin(rad) * 3];
+            positions.push(new Vector(x, y));
+        }
+        for (let i = coordinates.length; i < this.robots.length; i++) {
+            const closest = positions.sort((a, b) => (b.distanceToSq(this.robots[i].pos) - a.distanceToSq(this.robots[i].pos))).pop() ?? new Vector(0, 0);
+            // new MoveTo(this.robots[i]).run(new Vector(-4 + i * 0.3, -6), 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+            new MoveTo(this.robots[i]).run(closest, 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
         }
     }
 
