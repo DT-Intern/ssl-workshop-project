@@ -76,36 +76,43 @@ export class TacticPixelString {
     }
 
     renderLetter(pixels: boolean[][]) {
-        const coordinates: [number, number][] = [];
+        const positions: Vector[] = [];
 
         // Filter all coordinates to display
         pixels.forEach((column, x) => {
             column.forEach((_, y) => {
                 if (pixels[x][y]) {
-                    coordinates.push([x, y]);
+                    positions.push(new Vector(
+                        (x * this.spacing - (pixels.length - 1) / 2 * this.spacing),
+                        (y * this.spacing - (pixels[0].length - 1) / 2 * this.spacing)
+                    ));
                 }
             });
         })
 
         // Display the coordinates
-        coordinates.forEach((coordinate, index) => {
-            if (index < this.robots.length) {
-                const skill = new MoveTo(this.robots[index]);
-                const x = (coordinate[0] * this.spacing - (pixels.length - 1) / 2 * this.spacing); // check if -1 is only for even numbers of pixels
-                const y = (coordinate[1] * this.spacing - (pixels[0].length - 1) / 2 * this.spacing);
-                skill.run(new Vector(x, y), 0);
-            }
-        });
+        // positions.forEach((coordinate, index) => {
+        //     if (index < this.robots.length) {
+        //         const skill = new MoveTo(this.robots[index]);
+        //         skill.run(coordinate, 0);
+        //     }
+        // });
 
-        const positions: Vector[] = [];
-        for (let i = coordinates.length; i < this.robots.length; i++) {
-            const rad = (i - coordinates.length) / (this.robots.length - coordinates.length) * 2 * Math.PI;
-            const [x, y] = [Math.cos(rad) * 3, Math.sin(rad) * 3];
+        const numIdle = this.robots.length - positions.length;
+        for (let i = 0; i < numIdle; i++) {
+            const rad = i / numIdle * 2 * Math.PI;
+            const [x, y] = [Math.cos(rad + TacticPixelString.timeDiff) * 3, Math.sin(rad + TacticPixelString.timeDiff) * 3];
             positions.push(new Vector(x, y));
         }
-        for (let i = coordinates.length; i < this.robots.length; i++) {
-            const closest = positions.sort((a, b) => (b.distanceToSq(this.robots[i].pos) - a.distanceToSq(this.robots[i].pos))).pop() ?? new Vector(0, 0);
+
+        const numTotal = positions.length;
+        for (let i = 0; i < numTotal - numIdle; i++) {
             // new MoveTo(this.robots[i]).run(new Vector(-4 + i * 0.3, -6), 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+            new MoveTo(this.robots[i]).run(positions[i], 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+        }
+        
+        for (let i = numTotal - numIdle; i < numTotal; i++) {
+            const closest = positions.filter((_, index) => index >= numTotal - numIdle).sort((a, b) => (b.distanceToSq(this.robots[i].pos) - a.distanceToSq(this.robots[i].pos))).pop() ?? new Vector(0, 0);
             new MoveTo(this.robots[i]).run(closest, 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
         }
     }
