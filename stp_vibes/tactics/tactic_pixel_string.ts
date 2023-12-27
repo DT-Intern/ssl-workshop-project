@@ -18,6 +18,13 @@ export class TacticPixelString {
     static timeDiff: number = 0;
     static currentIndex: number = 0;
 
+    // robot index assignments
+    static assignments: [number, number][] = [];
+    static assignNewPositions = true;
+
+    // circle offset
+    static circleDelta = 0;
+
     constructor(robots: FriendlyRobot[], source: string, delay: number) {
         this.robots = robots;
         this.source = source;
@@ -56,6 +63,7 @@ export class TacticPixelString {
 
     public run() {
         if (this.queue) {
+            TacticPixelString.circleDelta = (TacticPixelString.circleDelta + World.TimeDiff) % 1e9;
             TacticPixelString.timeDiff += World.TimeDiff;
             amun.log(TacticPixelString.timeDiff)
 
@@ -64,6 +72,7 @@ export class TacticPixelString {
 
                 if (TacticPixelString.currentIndex < this.queue.length - 1) {
                     TacticPixelString.currentIndex += 1;
+                    TacticPixelString.assignNewPositions = true;
                 } else {
                     TacticPixelString.currentIndex = 0;
                 }
@@ -77,6 +86,7 @@ export class TacticPixelString {
 
     renderLetter(pixels: boolean[][]) {
         const positions: Vector[] = [];
+        const freeRobots = this.robots;
 
         // Filter all coordinates to display
         pixels.forEach((column, x) => {
@@ -101,20 +111,38 @@ export class TacticPixelString {
         const numIdle = this.robots.length - positions.length;
         for (let i = 0; i < numIdle; i++) {
             const rad = i / numIdle * 2 * Math.PI;
-            const [x, y] = [Math.cos(rad + TacticPixelString.timeDiff) * 3, Math.sin(rad + TacticPixelString.timeDiff) * 3];
+            const [x, y] = [Math.cos(rad + TacticPixelString.circleDelta / 5) * 3, Math.sin(rad + TacticPixelString.circleDelta / 5) * 3];
             positions.push(new Vector(x, y));
         }
 
-        const numTotal = positions.length;
-        for (let i = 0; i < numTotal - numIdle; i++) {
-            // new MoveTo(this.robots[i]).run(new Vector(-4 + i * 0.3, -6), 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
-            new MoveTo(this.robots[i]).run(positions[i], 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+        if (TacticPixelString.assignNewPositions) {
+            const indexedRobotPositions = this.robots.map((robot, index): [number, Vector] => ([index, robot.pos]));
+            TacticPixelString.assignments = positions
+                .map((position, index): [number, number] => ([
+                    index,
+                    indexedRobotPositions
+                        .sort(([_robotAIndex, robotAPosition], [_robotBIndex, robotBPosition]) =>
+                            robotBPosition.distanceTo(position) - robotAPosition.distanceTo(position))
+                        .pop()![0]
+                ])
+            );
+            TacticPixelString.assignNewPositions = false;
         }
+        amun.log(TacticPixelString.assignments)
+
+        for (const assignment of TacticPixelString.assignments) {
+            new MoveTo(this.robots[assignment[1]]).run(positions[assignment[0]], 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+        }
+
+        // const numTotal = positions.length;
+        // for (let i = 0; i < numTotal - numIdle; i++) {
+        //     // new MoveTo(this.robots[i]).run(new Vector(-4 + i * 0.3, -6), 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+        // }
         
-        for (let i = numTotal - numIdle; i < numTotal; i++) {
-            const closest = positions.filter((_, index) => index >= numTotal - numIdle).sort((a, b) => (b.distanceToSq(this.robots[i].pos) - a.distanceToSq(this.robots[i].pos))).pop() ?? new Vector(0, 0);
-            new MoveTo(this.robots[i]).run(closest, 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
-        }
+        // for (let i = numTotal - numIdle; i < numTotal; i++) {
+        //     const closest = positions.filter((_, index) => index >= numTotal - numIdle).sort((a, b) => (b.distanceToSq(this.robots[i].pos) - a.distanceToSq(this.robots[i].pos))).pop() ?? new Vector(0, 0);
+        //     new MoveTo(this.robots[i]).run(closest, 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+        // }
     }
 
 }
