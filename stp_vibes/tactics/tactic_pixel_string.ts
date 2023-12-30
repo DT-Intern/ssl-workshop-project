@@ -2,7 +2,7 @@ import * as World from "base/world";
 import { FriendlyRobot, Robot } from "base/robot";
 import { MoveTo } from "stp_vibes/skills/moveto";
 import { Vector } from "base/vector";
-import { isConstructorDeclaration } from "typescript";
+// import { isConstructorDeclaration } from "typescript";
 
 
 export class TacticPixelString {
@@ -131,7 +131,14 @@ export class TacticPixelString {
         amun.log(TacticPixelString.assignments)
 
         for (const assignment of TacticPixelString.assignments) {
-            new MoveTo(this.robots[assignment[1]]).run(positions[assignment[0]], 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+	    amun.log(assignment[0]);
+	    amun.log(assignment[1]);
+	    amun.log("---");
+	    const targetRobot = this.robots[assignment[1]];
+	    if (targetRobot) {
+	    	new MoveTo(targetRobot).run(positions[assignment[0]], 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
+	    }
+            // new MoveTo(this.robots[assignment[1]]).run(positions[assignment[0]], 0, undefined, undefined, { ignoreBall: true, ignoreGoals: true, ignoreDefenseArea: true });
         }
 
         // const numTotal = positions.length;
